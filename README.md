@@ -31,5 +31,9 @@ Dieses Projekt stellt eine schlanke Modbus-TCP-Bridge bereit, die Verbrauchswert
 git clone https://github.com/rICTx-T1D/vaillant-ebusd2modbus-tcp.git
 cd ebus2modbus
 docker build -t ebus2modbus .
-docker run --network host -e MODBUS_PORT=1502 ebus2modbus
-# ^^ port tcp/502 need root, use 1502 for rootless 
+docker run --network host \
+  -e MODBUS_PORT=1502 \
+  -e EBUSD_HOST=127.0.0.1 \
+  -e EBUSD_PORT=8888 \
+  ebus2modbus
+# ^^ modbus port tcp/502 need root, use 1502 for rootless 

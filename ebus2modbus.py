@@ -2,8 +2,12 @@ import os, socket, time, threading
 from pymodbus.server.sync import StartTcpServer
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 
-# Modbus-Port aus Umgebungsvariable (Standard: 502)
+# Modbus TCP Port (default: 502)
 MODBUS_PORT = int(os.getenv("MODBUS_PORT", "502"))
+
+# ebusd TCP Host/Port (default: 127.0.0.1:8888)
+EBUSD_HOST = os.getenv("EBUSD_HOST", "127.0.0.1")
+EBUSD_PORT = int(os.getenv("EBUSD_PORT", "8888"))
 
 # Modbus Holding Register: Register 0 = VerbrauchWP
 store = ModbusSlaveContext(hr={0: 0})
@@ -18,7 +22,7 @@ data_points = [
 
 def ebus_read(dp):
     try:
-        with socket.create_connection(("127.0.0.1", 8888), timeout=5) as s:
+        with socket.create_connection((EBUSD_HOST, EBUSD_PORT), timeout=5) as s:
             s.sendall(f"read -m 10 {dp}\n".encode())
             response = s.recv(128).decode().strip()
             return float(response.split('=')[-1])
