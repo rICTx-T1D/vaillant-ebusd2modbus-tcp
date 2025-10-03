@@ -1,6 +1,7 @@
 import os, socket, time, threading
 from pymodbus.server import ModbusTcpServer
-from pymodbus.datastore import ModbusContext, ModbusSequentialDataBlock
+from pymodbus.datastore import ModbusServerContext, ModbusSequentialDataBlock
+from pymodbus.datastore.store import BaseModbusDataBlock
 
 # Modbus TCP Port (default: 502)
 MODBUS_PORT = int(os.getenv("MODBUS_PORT", "502"))
@@ -11,7 +12,10 @@ EBUSD_PORT = int(os.getenv("EBUSD_PORT", "8888"))
 
 # Holding Register 0 = VerbrauchWP
 block = ModbusSequentialDataBlock(0, [0])
-context = ModbusContext(hr=block)
+store = {
+    "hr": block  # Holding Register
+}
+context = ModbusServerContext(slaves=store, single=True)
 
 # Datenpunkte, die summiert werden sollen
 data_points = [
@@ -33,7 +37,7 @@ def ebus_read(dp):
 def update_register():
     while True:
         verbrauch_wp = sum(ebus_read(dp) for dp in data_points)
-        context.set_values("hr", 0, [int(verbrauch_wp)])
+        context.setValues("hr", 0, [int(verbrauch_wp)])
         print(f"VerbrauchWP: {int(verbrauch_wp)} W")
         time.sleep(10)
 
