@@ -1,19 +1,15 @@
 import os, socket, time, threading
-from pymodbus.server.sync import StartTcpServer
-from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
+from pymodbus.server import ModbusTcpServer
+from pymodbus.datastore import ModbusServerContext, ModbusSlaveContext, ModbusSequentialDataBlock
 
-# Modbus TCP Port (default: 502)
 MODBUS_PORT = int(os.getenv("MODBUS_PORT", "502"))
-
-# ebusd TCP Host/Port (default: 127.0.0.1:8888)
 EBUSD_HOST = os.getenv("EBUSD_HOST", "127.0.0.1")
 EBUSD_PORT = int(os.getenv("EBUSD_PORT", "8888"))
 
-# Modbus Holding Register: Register 0 = VerbrauchWP
-store = ModbusSlaveContext(hr={0: 0})
+# Holding Register 0 = VerbrauchWP
+store = ModbusSlaveContext(hr=ModbusSequentialDataBlock(0, [0]))
 context = ModbusServerContext(slaves=store, single=True)
 
-# Datenpunkte, die summiert werden sollen
 data_points = [
     "CurrentConsumedPower",
     "BuildingCircuitPumpPowerSensor",
@@ -37,5 +33,5 @@ def update_register():
         print(f"VerbrauchWP: {int(verbrauch_wp)} W")
         time.sleep(10)
 
-threading.Thread(target=update_register).start()
-StartTcpServer(context, address=("0.0.0.0", MODBUS_PORT))
+threading.Thread(target=update_register, daemon=True).start()
+ModbusTcpServer(context, address=("0.0.0.0", MODBUS_PORT)).serve_forever()
