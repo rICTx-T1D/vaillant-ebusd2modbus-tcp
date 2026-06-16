@@ -14,7 +14,7 @@ MQTT_TOPIC_TOTAL_IMPORT = os.getenv("MQTT_TOPIC_TOTAL_IMPORT", "FroniusSM/01/imp
 MQTT_TOPIC_TOTAL_EXPORT = os.getenv("MQTT_TOPIC_TOTAL_EXPORT", "FroniusSM/01/export_total_kWh") #totalCounterExport Wh
 MQTT_TOPIC_L1_CONSUMPTION = os.getenv("MQTT_TOPIC_L1_CONSUMPTION", "") # L1 Watt
 MQTT_TOPIC_L2_CONSUMPTION= os.getenv("MQTT_TOPIC_L2_CONSUMPTION", "") # L2 Watt
-MQTT_TOPIC_L3_CONSUMPTION = os.getenv("MQTT_TOPIC_L3_CONSUMPTION", "") # L3 Watt, empty -> L1,L2,L3 i                                                                                                             s calculated
+MQTT_TOPIC_L3_CONSUMPTION = os.getenv("MQTT_TOPIC_L3_CONSUMPTION", "") # L3 Watt, empty -> L1,L2,L3 i                                                                                                   [...]
 #MQTT_TOPIC_TIME = "FSM/Time" #Timestamp for Check MK
 
 voltage_L_to_N = 230
@@ -256,26 +256,55 @@ def updating_writer(a_context):
         l2_int1, l2_int2 = calculate_register(float(l2))
         l3_int1, l3_int2 = calculate_register(float(l3))
 
+    #Converting voltage_L_to_N to Modbus register format
+    voltage_int1, voltage_int2 = calculate_register(float(voltage_L_to_N))
 
+    #Converting avg_frequency to Modbus register format
+    frequency_int1, frequency_int2 = calculate_register(float(avg_frequency))
+
+    #Calculate current from power using P=U*I => I=P/U
+    #Total current
+    total_power = float(leistung)
+    total_current = total_power / voltage_L_to_N if voltage_L_to_N != 0 else 0
+    total_current_int1, total_current_int2 = calculate_register(total_current)
+
+    #Calculate L1, L2, L3 currents
+    if MQTT_TOPIC_L1_CONSUMPTION == "" or MQTT_TOPIC_L2_CONSUMPTION == "" or MQTT_TOPIC_L3_CONSUMPTION == "":
+        #If individual phase currents not available, distribute total current equally
+        l1_power = float(leistung) / 3
+        l2_power = float(leistung) / 3
+        l3_power = float(leistung) / 3
+    else:
+        l1_power = float(l1)
+        l2_power = float(l2)
+        l3_power = float(l3)
+
+    l1_current = l1_power / voltage_L_to_N if voltage_L_to_N != 0 else 0
+    l2_current = l2_power / voltage_L_to_N if voltage_L_to_N != 0 else 0
+    l3_current = l3_power / voltage_L_to_N if voltage_L_to_N != 0 else 0
+
+    l1_current_int1, l1_current_int2 = calculate_register(l1_current)
+    l2_current_int1, l2_current_int2 = calculate_register(l2_current)
+    l3_current_int1, l3_current_int2 = calculate_register(l3_current)
 
     #updating the context
     context = a_context[0]
     register = 3
     slave_id = 0x01
     address = 0x9C87
-    values = [0, 0,               #Ampere - AC Total Current Value [A]
-              0, 0,               #Ampere - AC Current Value L1 [A]
-              0, 0,               #Ampere - AC Current Value L2 [A]
-              0, 0,               #Ampere - AC Current Value L3 [A]
-              0, 0,               #Voltage - Average Phase to Neutral [V]
-              0, 0,               #Voltage - Phase L1 to Neutral [V]
-              0, 0,               #Voltage - Phase L2 to Neutral [V]
-              0, 0,               #Voltage - Phase L3 to Neutral [V]
+    values = [total_current_int1, total_current_int2, #Ampere - AC Total Current Value [A]
+              l1_current_int1, l1_current_int2, #Ampere - AC Current Value L1 [A]
+              l2_current_int1, l2_current_int2, #Ampere - AC Current Value L2 [A]
+              l3_current_int1, l3_current_int2, #Ampere - AC Current Value L3 [A]
+              voltage_int1, voltage_int2, #Voltage - Average Phase to Neutral [V]
+              voltage_int1, voltage_int2, #Voltage - Phase L1 to Neutral [V]
+              voltage_int1, voltage_int2, #Voltage - Phase L2 to Neutral [V]
+              voltage_int1, voltage_int2, #Voltage - Phase L3 to Neutral [V]
               0, 0,               #Voltage - Average Phase to Phase [V]
               0, 0,               #Voltage - Phase L1 to L2 [V]
               0, 0,               #Voltage - Phase L2 to L3 [V]
               0, 0,               #Voltage - Phase L1 to L3 [V]
-              0, 0,               #AC Frequency [Hz]
+              frequency_int1, frequency_int2, #AC Frequency [Hz]
               ep_int1, 0,         #AC Power value (Total) [W] ==> Second hex word not needed
               l1_int1, 0,         #AC Power Value L1 [W]
               l2_int1, 0,         #AC Power Value L2 [W]
