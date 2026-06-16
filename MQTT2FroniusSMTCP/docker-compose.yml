@@ -11,7 +11,16 @@ services:
       - ./emulator.py:/app/emulator.py
     working_dir: /app
     environment:
-      - PYTHONUNBUFFERED=1          # <-- Zwingt Python, die Logs sofort auszugeben
+      - PYTHONUNBUFFERED=1
       - LOG_LEVEL=DEBUG
+      - MODBUS_PORT=1502
+      - MQTT_BROKER_HOST=mqttbroker.internal
+      - MQTT_BROKER_PORT=1883
+      - MQTT_BROKER_USERNAME=mqttuser
+      - MQTT_BROKER_PASSWORD=mqttpassword
+      - MQTT_TOPIC_CURRENT_POWER=FroniusSM/01/power_W
+      - MQTT_TOPIC_TOTAL_IMPORT=FroniusSM/01/import_total_kWh
+      - MQTT_TOPIC_TOTAL_EXPORT=FroniusSM/01/export_total_kWh
+
     command: >
       sh -c "pip install --no-cache-dir paho-mqtt==1.6.1 pyModbusTCP pymodbus==2.5.3 && python emulator.py"

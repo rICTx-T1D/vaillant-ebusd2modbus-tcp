@@ -3,24 +3,24 @@
 # Configuration
 ###############################################################
 mqttconf = {
-            'username':"mqttusername",
-            'password':"mqttpassword",
-            'address': "ip-address",
-            'port': 1883
+            'username':os.getenv("MQTT_BROKER_USERNAME", "SM-MQTTuser"),
+            'password':os.getenv("MQTT_BROKER_PASSWORD", "SM-MQTTsecretPaSSw0rd"),
+            'address': os.getenv("MQTT_BROKER_HOST", "mqttbroker.internal"),
+            'port': int(os.getenv("MQTT_BROKER_PORT", 1883))
 }
-MQTT_TOPIC_CONSUMPTION  = "FroniusSM/01/power_W" #OpenDTU Watts
-MQTT_TOPIC_TOTAL_IMPORT = "FroniusSM/01/import_total_kWh" #Import Wh
-MQTT_TOPIC_TOTAL_EXPORT = "FroniusSM/01/export_total_kWh" #Export WH
-MQTT_TOPIC_L1_CONSUMPTION = "" # L1 Watts
-MQTT_TOPIC_L2_CONSUMPTION= "" # L2 Watts
-MQTT_TOPIC_L3_CONSUMPTION = "" # L3 Watts, empty -> L1,L2,L3 i                                                                                                             s calculated
+MQTT_TOPIC_CONSUMPTION  = os.getenv("MQTT_TOPIC_CURRENT_POWER", "FroniusSM/01/power_W") #current Watt
+MQTT_TOPIC_TOTAL_IMPORT = os.getenv("MQTT_TOPIC_TOTAL_IMPORT", "FroniusSM/01/import_total_kWh") #totalCounterImport Wh
+MQTT_TOPIC_TOTAL_EXPORT = os.getenv("MQTT_TOPIC_TOTAL_EXPORT", "FroniusSM/01/export_total_kWh") #totalCounterExport Wh
+MQTT_TOPIC_L1_CONSUMPTION = os.getenv("MQTT_TOPIC_L1_CONSUMPTION", "") # L1 Watt
+MQTT_TOPIC_L2_CONSUMPTION= os.getenv("MQTT_TOPIC_L2_CONSUMPTION", "") # L2 Watt
+MQTT_TOPIC_L3_CONSUMPTION = os.getenv("MQTT_TOPIC_L3_CONSUMPTION", "") # L3 Watt, empty -> L1,L2,L3 i                                                                                                             s calculated
 #MQTT_TOPIC_TIME = "FSM/Time" #Timestamp for Check MK
 
 corrfactor = 1 # or 1000
 i_corrfactor = int(corrfactor)
 # change serialnumber at line ~331, for using more than one instance of tis emulator!
 
-modbus_port = 1502
+modbus_port = int(os.getenv("MODBUS_PORT", "1502"))
 ###############################################################
 
 # Many MANY many thanks at 
