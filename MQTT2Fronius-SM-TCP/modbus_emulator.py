@@ -2,6 +2,7 @@
 ###############################################################
 # Configuration
 ###############################################################
+import os
 mqttconf = {
             'username':os.getenv("MQTT_BROKER_USERNAME", "SM-MQTTuser"),
             'password':os.getenv("MQTT_BROKER_PASSWORD", "SM-MQTTsecretPaSSw0rd"),
@@ -43,7 +44,6 @@ import getopt
 import sys
 import socket
 import signal
-import os
 
 from pymodbus.server.sync import StartTcpServer
 
