@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  fronius-emulator:
+    image: python:3.10-slim
+    container_name: fronius_custom_emulator
+    restart: unless-stopped
+    ports:
+      - "1502:1502"
+    volumes:
+      - ./emulator.py:/app/emulator.py
+    working_dir: /app
+    environment:
+      - PYTHONUNBUFFERED=1          # <-- Zwingt Python, die Logs sofort auszugeben
+      - LOG_LEVEL=DEBUG
+    command: >
+      sh -c "pip install --no-cache-dir paho-mqtt==1.6.1 pyModbusTCP pymodbus==2.5.3 && python emulator.py"
