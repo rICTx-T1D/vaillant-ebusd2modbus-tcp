@@ -17,6 +17,8 @@ MQTT_TOPIC_L2_CONSUMPTION= os.getenv("MQTT_TOPIC_L2_CONSUMPTION", "") # L2 Watt
 MQTT_TOPIC_L3_CONSUMPTION = os.getenv("MQTT_TOPIC_L3_CONSUMPTION", "") # L3 Watt, empty -> L1,L2,L3 i                                                                                                             s calculated
 #MQTT_TOPIC_TIME = "FSM/Time" #Timestamp for Check MK
 
+voltage_L_to_N = 230
+avg_frequency = 50
 corrfactor = 1 # or 1000
 i_corrfactor = int(corrfactor)
 # change serialnumber at line ~331, for using more than one instance of tis emulator!
