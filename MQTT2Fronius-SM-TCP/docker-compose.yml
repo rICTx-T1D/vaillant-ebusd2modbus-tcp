@@ -21,6 +21,6 @@ services:
       - MQTT_TOPIC_CURRENT_POWER=FroniusSM/01/power_W
       - MQTT_TOPIC_TOTAL_IMPORT=FroniusSM/01/import_total_kWh
       - MQTT_TOPIC_TOTAL_EXPORT=FroniusSM/01/export_total_kWh
-
+      - SMART_METER_SERIAL="00000002"
     command: >
       sh -c "pip install --no-cache-dir paho-mqtt==1.6.1 pyModbusTCP pymodbus==2.5.3 && python emulator.py"

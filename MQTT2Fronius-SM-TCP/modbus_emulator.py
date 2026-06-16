@@ -350,8 +350,13 @@ def updating_writer(a_context):
 def run_updating_server():
     global modbus_port
     lock.acquire()
-    datablock = ModbusSparseDataBlock({
+    # Serial from env: must be exactly 8 decimal digits, otherwise use "00000002"
+    serial_env = os.getenv("SMART_METER_SERIAL", "00000002")
+    if not (isinstance(serial_env, str) and len(serial_env) == 8 and serial_env.isdigit()):
+        serial_env = "00000002"
+    serial_bytes = [ord(c) for c in serial_env]
 
+    datablock = ModbusSparseDataBlock({
         40001:  [21365, 28243],
         40003:  [1],
         40004:  [65],
@@ -359,11 +364,12 @@ def run_updating_server():
                 83,109,97,114,116,32,77,101,116,101,114,32,54,51,65,0, #Device Model "Smart Meter
                 0,0,0,0,0,0,0,0,                                       #Options N/A
                 0,0,0,0,0,0,0,0,                                       #Software Version  N/A
-                48,48,48,48,48,48,48,50,0,0,0,0,0,0,0,0,               #Serial Number: 00000 (should be different if there are more Smart Meters)
+                ] + serial_bytes + [0,0,0,0,0,0,0,0,                    #Serial Number from SMART_METER_SERIAL env
                 240],                                                  #Modbus TCP Address:
         40070: [213],
         40071: [124],
         40072: [0,0,0,0,0,0,0,0,0,0,
+                0,0,0,0,0,0,0,0,0,0,
                 0,0,0,0,0,0,0,0,0,0,
                 0,0,0,0,0,0,0,0,0,0,
                 0,0,0,0,0,0,0,0,0,0,
